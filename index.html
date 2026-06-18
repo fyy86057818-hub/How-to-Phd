@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f0e8">
+  <title>Linda Research Companion</title>
+  <style>
+    :root {
+      --paper: #f4f0e8;
+      --paper-deep: #e8e0d3;
+      --surface: #fffefa;
+      --surface-soft: #eeeee8;
+      --ink: #181817;
+      --muted: #696963;
+      --line: #d4d1c8;
+      --sage: #71806a;
+      --sage-soft: #e8ede4;
+      --brown: #9a8065;
+      --brown-soft: #eee5da;
+      --danger: #7b4f48;
+      --shadow: 0 10px 32px rgba(34, 31, 25, 0.08);
+      --header-h: 68px;
+      --nav-w: 220px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--paper); }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(37, 33, 27, 0.035) 32px, transparent 33px),
+        radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.72), transparent 32%),
+        var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 2px solid var(--sage);
+      outline-offset: 2px;
+    }
+    .hidden { display: none !important; }
+
+    /* Cover */
+    .cover {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      overflow: auto;
+      padding: 32px;
+      background:
+        repeating-linear-gradient(0deg, transparent 0 30px, rgba(32, 29, 24, 0.05) 31px, transparent 32px),
+        repeating-linear-gradient(90deg, transparent 0 42px, rgba(32, 29, 24, 0.025) 43px, transparent 44px),
+        radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.82), transparent 34%),
+        #f5efe5;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+    .cover.is-leaving { opacity: 0; visibility: hidden; }
+    .cover-layout {
+      width: min(1040px, 100%);
+      display: grid;
+      grid-template-columns: minmax(300px, 1fr) minmax(280px, 390px);
+      align-items: center;
+      gap: 72px;
+      position: relative;
+    }
+    .cover-copy { position: relative; z-index: 1; }
+    .cover-brand {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 30px;
+    }
+    .cover-linda {
+      font-family: "Snell Roundhand", "Brush Script MT", "Apple Chancery",
+        "Segoe Script", cursive;
+      font-size: clamp(4.5rem, 9vw, 7.3rem);
+      font-style: italic;
+      font-weight: 600;
+      line-height: 0.8;
+    }
+    .cover-tagline {
+      margin-top: 15px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .cover-positioning {
+      max-width: 500px;
+      margin: 0 0 26px;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(1.35rem, 3vw, 2.05rem);
+      line-height: 1.35;
+      font-weight: 400;
+    }
+    .cover-tasks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cover-tasks span {
+      padding: 7px 11px;
+      border: 1px solid rgba(24, 24, 23, 0.22);
+      border-radius: 7px;
+      background: rgba(255, 254, 250, 0.62);
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+    .paper-note {
+      position: absolute;
+      color: rgba(24, 24, 23, 0.35);
+      font-family: "Bradley Hand", "Marker Felt", "Comic Sans MS", cursive;
+      font-size: 0.9rem;
+      pointer-events: none;
+      user-select: none;
+    }
+    .paper-note.one { left: -18px; top: -42px; transform: rotate(-7deg); }
+    .paper-note.two { left: 55%; bottom: -48px; transform: rotate(5deg); }
+    .paper-strike {
+      position: absolute;
+      left: 12%;
+      bottom: 25%;
+      width: 138px;
+      height: 24px;
+      opacity: 0.34;
+      pointer-events: none;
+    }
+    .paper-strike::before, .paper-strike::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 2px solid var(--danger);
+    }
+    .paper-strike::before { transform: rotate(7deg); }
+    .paper-strike::after { transform: rotate(-5deg); }
+
+    .cat-button {
+      width: min(390px, 84vw);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+    }
+    .cat-button::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      left: 13%;
+      right: 10%;
+      bottom: 1%;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(34, 29, 23, 0.14);
+      filter: blur(8px);
+    }
+    .cat-button svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      transition: transform 0.16s ease;
+    }
+    .cat-button:hover svg { transform: translateY(-4px) rotate(-1deg); }
+    .cat-paw { transform-box: fill-box; transform-origin: 50% 78%; }
+    .cat-button.is-waving .cat-paw { animation: wave 0.5s ease-in-out 2; }
+    .cat-button.is-waving .cat-banner { animation: bounce 0.5s ease-in-out 2; }
+    @keyframes wave {
+      0%, 100% { transform: rotate(0); }
+      30% { transform: rotate(-15deg); }
+      62% { transform: rotate(11deg); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* App shell */
+    .app { min-height: 100vh; }
+    .app-header {
+      height: var(--header-h);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 254, 250, 0.94);
+      backdrop-filter: blur(14px);
+    }
+    .brand {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      line-height: 1;
+    }
+    .brand-linda {
+      font-family: "Snell Roundhand", "Brush Script MT", "Apple Chancery",
+        "Segoe Script", cursive;
+      font-size: 2rem;
+      font-style: italic;
+      font-weight: 600;
+    }
+    .brand-sub {
+      margin-top: 4px;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+    .header-action {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+    .header-action:hover { border-color: var(--sage); color: var(--sage); }
+
+    .shell {
+      min-height: calc(100vh - var(--header-h));
+      display: grid;
+      grid-template-columns: var(--nav-w) minmax(0, 1fr);
+    }
+    .side-nav {
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      padding: 22px 14px;
+      border-right: 1px solid var(--line);
+      background: rgba(236, 233, 225, 0.78);
+    }
+    .nav-label {
+      padding: 0 10px 10px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 750;
+      letter-spacing: 0.12em;
+    }
+    .nav-button {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+    .nav-button:hover { background: rgba(255, 254, 250, 0.58); }
+    .nav-button.is-active {
+      border-color: var(--line);
+      background: var(--surface);
+      box-shadow: 0 3px 12px rgba(34, 31, 25, 0.05);
+    }
+    .nav-icon {
+      width: 25px;
+      height: 25px;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 25px;
+      border-radius: 6px;
+      background: var(--surface-soft);
+      font-family: Georgia, serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .nav-button.is-active .nav-icon { background: var(--sage-soft); color: var(--sage); }
+
+    .workspace {
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 42px clamp(22px, 5vw, 62px) 80px;
+    }
+    .view { display: none; }
+    .view.is-active { display: block; }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--sage);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
+    .page-title {
+      margin: 0;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    .page-subtitle {
+      max-width: 660px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    /* Home */
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 32px;
+    }
+    .task-card {
+      min-height: 210px;
+      padding: 23px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+    .task-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--sage);
+      box-shadow: var(--shadow);
+    }
+    .task-number {
+      display: inline-grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      margin-bottom: 26px;
+      border-radius: 7px;
+      background: var(--sage-soft);
+      color: var(--sage);
+      font-family: Georgia, serif;
+      font-weight: 700;
+    }
+    .task-card:nth-child(2) .task-number { background: var(--brown-soft); color: var(--brown); }
+    .task-card:nth-child(3) .task-number { background: var(--surface-soft); color: var(--ink); }
+    .task-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.12rem;
+      letter-spacing: 0;
+    }
+    .task-card p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+    .home-note {
+      max-width: 720px;
+      margin-top: 24px;
+      padding: 15px 17px;
+      border-left: 3px solid var(--sage);
+      background: rgba(232, 237, 228, 0.52);
+      color: #52594e;
+      font-size: 0.88rem;
+    }
+
+    /* Task composer */
+    .composer-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      align-items: start;
+      gap: 24px;
+      margin-top: 30px;
+    }
+    .composer-main, .output-panel, .context-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    .composer-main { padding: 24px; }
+    .field { margin-bottom: 22px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.86rem;
+      font-weight: 750;
+    }
+    .field-hint {
+      margin-left: 5px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    textarea, input[type="text"], select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fbfaf6;
+      color: var(--ink);
+    }
+    textarea {
+      min-height: 190px;
+      padding: 14px;
+      resize: vertical;
+      line-height: 1.65;
+    }
+    input[type="text"], select {
+      min-height: 44px;
+      padding: 0 12px;
+    }
+    textarea:focus, input[type="text"]:focus, select:focus {
+      border-color: var(--sage);
+      background: var(--surface);
+    }
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .option-button {
+      min-height: 46px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fbfaf6;
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+    .option-button:hover { border-color: var(--sage); }
+    .option-button.is-selected {
+      border-color: var(--sage);
+      background: var(--sage-soft);
+      color: #4f6049;
+    }
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-soft);
+    }
+    .mode-button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .mode-button.is-selected { background: var(--surface); box-shadow: 0 1px 5px rgba(0,0,0,0.06); }
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .file-input { position: absolute; inline-size: 1px; block-size: 1px; opacity: 0; pointer-events: none; }
+    .file-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .file-button:hover { border-color: var(--sage); color: var(--sage); }
+    .file-status { color: var(--muted); font-size: 0.78rem; }
+    .details {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+    .details summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+    .details textarea { min-height: 100px; margin-top: 12px; }
+    .primary-button {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 22px;
+      border: 1px solid var(--ink);
+      border-radius: 7px;
+      background: var(--ink);
+      color: white;
+      cursor: pointer;
+      font-weight: 750;
+    }
+    .primary-button:hover { background: #353532; }
+    .primary-button.is-copied { border-color: var(--sage); background: var(--sage); }
+
+    .output-panel {
+      position: sticky;
+      top: calc(var(--header-h) + 22px);
+      overflow: hidden;
+    }
+    .output-empty { padding: 24px; color: var(--muted); font-size: 0.86rem; }
+    .output-ready { display: none; }
+    .output-ready.is-visible { display: block; }
+    .output-head {
+      padding: 19px 20px 15px;
+      border-bottom: 1px solid var(--line);
+    }
+    .output-head h3 { margin: 0 0 4px; font-size: 0.96rem; }
+    .output-head p { margin: 0; color: var(--muted); font-size: 0.78rem; }
+    .output-brief {
+      display: grid;
+      gap: 9px;
+      padding: 17px 20px;
+      color: #3f463b;
+      font-size: 0.8rem;
+    }
+    .output-brief span {
+      position: relative;
+      padding-left: 15px;
+    }
+    .output-brief span::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--sage);
+    }
+    .output-details { border-top: 1px solid var(--line); }
+    .output-details summary {
+      padding: 12px 20px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+    .output-preview {
+      max-height: 300px;
+      overflow: auto;
+      margin: 0;
+      padding: 18px 20px;
+      background: #f7f5ef;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #343430;
+      font: 0.77rem/1.65 "SFMono-Regular", Consolas, monospace;
+    }
+    .output-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .copy-button, .secondary-button {
+      min-height: 42px;
+      padding: 0 13px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 750;
+    }
+    .copy-button { border: 1px solid var(--ink); background: var(--ink); color: white; }
+    .copy-button.is-copied { border-color: var(--sage); background: var(--sage); }
+    .secondary-button { border: 1px solid var(--line); background: var(--surface); }
+    .output-note {
+      padding: 0 18px 16px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    /* Context dialog */
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(24, 24, 23, 0.36);
+    }
+    .context-panel {
+      width: min(540px, 100%);
+      max-height: min(680px, 90vh);
+      overflow: auto;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .context-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .context-head h2 { margin: 0; font: 500 1.45rem/1.2 Georgia, "Songti SC", serif; }
+    .icon-button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+    .context-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .danger-button {
+      min-height: 40px;
+      padding: 0 13px;
+      border: 1px solid #cdbab7;
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .mobile-nav { display: none; }
+    .toast {
+      position: fixed;
+      z-index: 120;
+      left: 50%;
+      bottom: 24px;
+      transform: translate(-50%, 18px);
+      padding: 9px 14px;
+      border-radius: 7px;
+      background: var(--ink);
+      color: white;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 900px) {
+      .cover-layout { grid-template-columns: 1fr; gap: 24px; text-align: center; }
+      .cover-copy { display: flex; flex-direction: column; align-items: center; }
+      .cover-brand { align-items: center; }
+      .cover-positioning { max-width: 620px; }
+      .cover-tasks { justify-content: center; }
+      .cat-button { width: min(310px, 76vw); }
+      .paper-note.two { bottom: -20px; }
+
+      .task-grid { grid-template-columns: 1fr; }
+      .task-card {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        column-gap: 13px;
+        align-items: start;
+        padding: 18px;
+      }
+      .task-number { grid-row: 1 / 3; margin: 0; }
+      .task-card h2 { margin-top: 2px; }
+      .composer-layout { grid-template-columns: 1fr; }
+      .output-panel { position: static; }
+    }
+
+    @media (max-width: 700px) {
+      :root { --header-h: 60px; }
+      body { padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+      .cover { padding: 28px 18px; align-items: start; }
+      .cover-layout { margin: auto 0; }
+      .cover-linda { font-size: clamp(4.2rem, 22vw, 6rem); }
+      .cover-positioning { font-size: 1.3rem; }
+      .cover-tasks span { font-size: 0.76rem; }
+      .cat-button { width: min(270px, 72vw); }
+      .paper-note, .paper-strike { opacity: 0.55; }
+
+      .app-header { padding: 0 16px; }
+      .brand-linda { font-size: 1.75rem; }
+      .header-action { min-height: 36px; padding: 0 10px; font-size: 0.78rem; }
+      .shell { display: block; }
+      .side-nav { display: none; }
+      .workspace { padding: 28px 16px 40px; }
+      .page-title { font-size: 1.9rem; }
+      .page-subtitle { font-size: 0.9rem; }
+      .task-grid { margin-top: 24px; gap: 10px; }
+      .task-card { padding: 16px; }
+      .composer-layout { margin-top: 22px; gap: 14px; }
+      .composer-main { padding: 17px; }
+      .option-grid { grid-template-columns: 1fr; }
+      textarea { min-height: 165px; font-size: 16px; }
+      input[type="text"], select { font-size: 16px; }
+      .output-preview { max-height: 250px; }
+
+      .mobile-nav {
+        position: fixed;
+        z-index: 40;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        min-height: calc(62px + env(safe-area-inset-bottom));
+        padding: 5px 6px env(safe-area-inset-bottom);
+        border-top: 1px solid var(--line);
+        background: rgba(255, 254, 250, 0.96);
+        backdrop-filter: blur(14px);
+      }
+      .mobile-nav button {
+        min-width: 0;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 0.67rem;
+        font-weight: 700;
+      }
+      .mobile-nav button::before {
+        content: attr(data-short);
+        display: block;
+        margin-bottom: 1px;
+        font: 700 0.85rem/1 Georgia, serif;
+      }
+      .mobile-nav button.is-active { background: var(--sage-soft); color: #4f6049; }
+      .toast { bottom: calc(78px + env(safe-area-inset-bottom)); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="cover" id="cover">
+    <div class="paper-strike" aria-hidden="true"></div>
+    <div class="cover-layout">
+      <div class="cover-copy">
+        <span class="paper-note one" aria-hidden="true">think with evidence</span>
+        <span class="paper-note two" aria-hidden="true">what am I missing?</span>
+        <div class="cover-brand">
+          <span class="cover-linda">Linda</span>
+          <span class="cover-tagline">How to Phd</span>
+        </div>
+        <h1 class="cover-positioning">把材料和想法带来，先一起把问题想清楚。</h1>
+        <div class="cover-tasks" aria-label="核心任务">
+          <span>访谈与文本</span>
+          <span>文献工作</span>
+          <span>专家讨论</span>
+        </div>
+      </div>
+
+      <button class="cat-button" id="cat-enter" type="button" aria-label="进入研究协作台">
+        <svg viewBox="0 0 360 420" role="img" aria-label="拿着 Accepted 横幅的招财猫">
+          <g stroke="#171716" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M91 362C65 330 67 273 101 224C78 174 91 113 130 91L151 123C169 113 194 113 211 123L232 91C272 113 285 174 259 224C294 273 296 330 268 362C235 389 123 389 91 362Z" fill="#fffefa"/>
+            <path d="M134 97L151 123L123 136Z" fill="#9d473a"/>
+            <path d="M228 97L211 123L239 136Z" fill="#9d473a"/>
+            <path d="M113 229C88 244 79 278 88 308M247 229C271 244 281 278 271 308" fill="none"/>
+            <path d="M116 354C124 335 145 330 162 351M199 351C216 330 237 335 245 354" fill="none"/>
+            <path d="M123 187H237" fill="none" stroke="#9d473a" stroke-width="16"/>
+            <circle cx="180" cy="192" r="17" fill="#f4f0e8"/>
+            <path d="M180 183V201M170 192H190" fill="none" stroke-width="4"/>
+          </g>
+          <g stroke="#171716" stroke-width="5" stroke-linecap="round" fill="none">
+            <path d="M136 155C145 166 158 166 166 155M194 155C203 166 216 166 224 155"/>
+            <path d="M178 166Q180 169 182 166"/>
+            <path d="M180 169C174 178 164 178 158 171M180 169C186 178 196 178 202 171"/>
+            <path d="M118 166H91M119 181H91M241 166H269M240 181H269"/>
+          </g>
+          <circle cx="121" cy="289" r="9" fill="#9d473a"/>
+          <circle cx="247" cy="293" r="8" fill="#9d473a"/>
+          <g class="cat-banner" stroke="#171716" stroke-width="5" stroke-linejoin="round">
+            <path d="M78 254C123 233 237 233 284 254L267 318C222 297 137 297 92 318Z" fill="#eee5da"/>
+            <path d="M78 254L55 270L84 282M284 254L307 270L278 282" fill="#cdbba5"/>
+            <text x="180" y="285" text-anchor="middle" font-family="Georgia, serif" font-size="35" font-weight="700" fill="#171716" stroke="none">Accepted</text>
+          </g>
+          <g class="cat-paw" stroke="#171716" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M258 215C301 190 333 213 328 258C325 286 297 298 279 279C267 267 257 240 258 215Z" fill="#fffefa"/>
+            <path d="M288 229V249M306 229V247M271 237V257" fill="none"/>
+            <circle cx="307" cy="285" r="7" fill="#9d473a" stroke="none"/>
+          </g>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <div class="app hidden" id="app">
+    <header class="app-header">
+      <div class="brand" aria-label="Linda How to Phd">
+        <span class="brand-linda">Linda</span>
+        <span class="brand-sub">How to Phd</span>
+      </div>
+      <button class="header-action" id="context-open" type="button">研究背景</button>
+    </header>
+
+    <div class="shell">
+      <nav class="side-nav" aria-label="任务导航">
+        <div class="nav-label">研究协作</div>
+        <button class="nav-button is-active" type="button" data-view="home">
+          <span class="nav-icon">·</span><span>开始</span>
+        </button>
+        <button class="nav-button" type="button" data-view="text">
+          <span class="nav-icon">T</span><span>访谈与文本</span>
+        </button>
+        <button class="nav-button" type="button" data-view="literature">
+          <span class="nav-icon">L</span><span>文献工作</span>
+        </button>
+        <button class="nav-button" type="button" data-view="critique">
+          <span class="nav-icon">C</span><span>专家讨论</span>
+        </button>
+      </nav>
+
+      <main class="workspace">
+        <section class="view is-active" id="view-home">
+          <p class="eyebrow">从现有材料开始</p>
+          <h1 class="page-title">今天想处理什么？</h1>
+          <p class="page-subtitle">不用先填完整框架。放进你已有的材料、零散想法或一个问题就可以。</p>
+
+          <div class="task-grid">
+            <button class="task-card" type="button" data-go="text">
+              <span class="task-number">01</span>
+              <h2>访谈与大段文本</h2>
+              <p>编码、归纳主题、比较访谈、寻找反例或整理分析备忘录。</p>
+            </button>
+            <button class="task-card" type="button" data-go="literature">
+              <span class="task-number">02</span>
+              <h2>文献工作</h2>
+              <p>查找证据、比较观点、梳理论争或检查引用是否支撑论点。</p>
+            </button>
+            <button class="task-card" type="button" data-go="critique">
+              <span class="task-number">03</span>
+              <h2>专家视角讨论</h2>
+              <p>让导师、领域专家或方法专家指出盲点，并与你逐步讨论。</p>
+            </button>
+          </div>
+
+          <div class="home-note">默认采用“先理解，再追问”的方式：AI 每次只问一个关键问题，不会先让你完成一整套表格。</div>
+        </section>
+
+        <section class="view" id="view-task">
+          <p class="eyebrow" id="task-eyebrow">访谈与文本</p>
+          <h1 class="page-title" id="task-title">先放进材料</h1>
+          <p class="page-subtitle" id="task-subtitle"></p>
+
+          <div class="composer-layout">
+            <div class="composer-main">
+              <div class="field">
+                <label class="field-label" for="material">现有材料 <span class="field-hint">可以很乱，也可以留空</span></label>
+                <textarea id="material" placeholder="粘贴访谈片段、研究想法、文献笔记或当前卡住的问题……"></textarea>
+              </div>
+
+              <div class="field" id="file-field">
+                <span class="field-label">材料文件 <span class="field-hint">TXT / MD / CSV</span></span>
+                <div class="file-row">
+                  <input class="file-input" id="files" type="file" accept=".txt,.md,.csv,.json,text/plain,text/csv" multiple>
+                  <label class="file-button" for="files">选择文件</label>
+                  <span class="file-status" id="file-status">未选择</span>
+                </div>
+              </div>
+
+              <div class="field">
+                <span class="field-label">希望先做什么</span>
+                <div class="option-grid" id="action-options"></div>
+              </div>
+
+              <div class="field">
+                <span class="field-label">讨论方式</span>
+                <div class="mode-switch" id="mode-switch">
+                  <button class="mode-button is-selected" type="button" data-mode="guided">先追问，再建议</button>
+                  <button class="mode-button" type="button" data-mode="direct">直接分析并给建议</button>
+                </div>
+              </div>
+
+              <details class="details">
+                <summary>补充这次任务的背景（可选）</summary>
+                <textarea id="task-context" placeholder="例如：研究对象、学科语境、目前阶段、必须保留的概念……"></textarea>
+              </details>
+
+              <button class="primary-button" id="prepare" type="button">准备对话</button>
+            </div>
+
+            <aside class="output-panel" aria-live="polite">
+              <div class="output-empty" id="output-empty">准备好后，这里会出现一段简洁的对话开场。复制一次，就可以在 AI 中继续讨论。</div>
+              <div class="output-ready" id="output-ready">
+                <div class="output-head">
+                  <h3>对话开场已准备好</h3>
+                  <p id="output-summary"></p>
+                </div>
+                <div class="output-brief" id="output-brief"></div>
+                <details class="output-details">
+                  <summary>查看完整内容</summary>
+                  <pre class="output-preview" id="output-preview"></pre>
+                </details>
+                <div class="output-actions">
+                  <button class="copy-button" id="copy-output" type="button">复制对话开场</button>
+                  <button class="secondary-button" id="edit-output" type="button">调整</button>
+                </div>
+                <div class="output-note" id="output-note">在 Codex 或其他 AI 的新对话中粘贴一次即可。</div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <nav class="mobile-nav" aria-label="手机任务导航">
+      <button class="is-active" type="button" data-view="home" data-short="·">开始</button>
+      <button type="button" data-view="text" data-short="T">文本</button>
+      <button type="button" data-view="literature" data-short="L">文献</button>
+      <button type="button" data-view="critique" data-short="C">讨论</button>
+    </nav>
+  </div>
+
+  <div class="dialog-backdrop hidden" id="context-dialog" role="dialog" aria-modal="true" aria-labelledby="context-title">
+    <section class="context-panel">
+      <div class="context-head">
+        <div>
+          <p class="eyebrow">可选</p>
+          <h2 id="context-title">研究背景</h2>
+        </div>
+        <button class="icon-button" id="context-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="field">
+        <label class="field-label" for="research-topic">研究主题</label>
+        <input id="research-topic" type="text" placeholder="一句话即可">
+      </div>
+      <div class="field">
+        <label class="field-label" for="research-field">学科或研究领域</label>
+        <input id="research-field" type="text" placeholder="例如 STEM 教育、社会学、健康传播">
+      </div>
+      <div class="field">
+        <label class="field-label" for="research-notes">长期背景</label>
+        <textarea id="research-notes" placeholder="研究对象、数据类型、理论偏好或需要长期记住的信息"></textarea>
+      </div>
+      <div class="context-actions">
+        <button class="danger-button" id="context-clear" type="button">清空</button>
+        <button class="copy-button" id="context-save" type="button">保存</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const storageKey = "linda-research-companion-v2";
+      const maxEmbeddedChars = 160000;
+      const taskConfig = {
+        text: {
+          eyebrow: "访谈与文本",
+          title: "让材料先说话",
+          subtitle: "从原始文本开始，保留证据与语境，不急着套理论。",
+          placeholder: "粘贴访谈片段、观察记录、开放题回答或已有编码……",
+          actions: [
+            ["code", "初步编码"],
+            ["themes", "归纳主题"],
+            ["compare", "比较不同材料"],
+            ["negative", "寻找反例与矛盾"],
+            ["memo", "形成分析备忘录"],
+            ["audit", "检查现有分析"]
+          ]
+        },
+        literature: {
+          eyebrow: "文献工作",
+          title: "围绕问题组织证据",
+          subtitle: "可以从一个问题、几篇文献或一段论证开始。",
+          placeholder: "粘贴研究问题、关键词、摘要、文献笔记或正在写的论证……",
+          actions: [
+            ["find", "寻找相关文献"],
+            ["map", "梳理主要观点"],
+            ["compare", "比较不同解释"],
+            ["gap", "识别证据缺口"],
+            ["support", "检查论点与引用"],
+            ["synthesis", "形成综合判断"]
+          ]
+        },
+        critique: {
+          eyebrow: "专家讨论",
+          title: "找出真正需要想清楚的地方",
+          subtitle: "不替你决定选题，而是从第三方视角指出盲点、假设和替代解释。",
+          placeholder: "写下你的想法、研究问题、设计方案，或一段你拿不准的论证……",
+          actions: [
+            ["supervisor", "导师视角"],
+            ["domain", "领域专家视角"],
+            ["methods", "研究方法视角"],
+            ["stem", "STEM 专家视角"],
+            ["reviewer", "审稿人视角"],
+            ["devil", "反方视角"]
+          ]
+        }
+      };
+
+      let state = {
+        view: "home",
+        task: "text",
+        action: "code",
+        mode: "guided",
+        files: [],
+        output: "",
+        context: { topic: "", field: "", notes: "" }
+      };
+
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+          if (saved.context) state.context = { ...state.context, ...saved.context };
+        } catch (_) {}
+      }
+
+      function saveContext() {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify({ context: state.context }));
+        } catch (_) {}
+      }
+
+      function showToast(message) {
+        const toast = $("toast");
+        toast.textContent = message;
+        toast.classList.add("is-visible");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      }
+
+      function enterApp() {
+        const cat = $("cat-enter");
+        cat.disabled = true;
+        cat.classList.add("is-waving");
+        setTimeout(() => {
+          $("cover").classList.add("is-leaving");
+          $("app").classList.remove("hidden");
+          setTimeout(() => {
+            $("cover").classList.add("hidden");
+            cat.disabled = false;
+          }, 360);
+        }, 620);
+      }
+
+      function setView(view) {
+        state.view = view;
+        document.querySelectorAll("[data-view]").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.view === view);
+        });
+        $("view-home").classList.toggle("is-active", view === "home");
+        $("view-task").classList.toggle("is-active", view !== "home");
+        if (view !== "home") setTask(view);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function setTask(task) {
+        state.task = task;
+        const config = taskConfig[task];
+        $("task-eyebrow").textContent = config.eyebrow;
+        $("task-title").textContent = config.title;
+        $("task-subtitle").textContent = config.subtitle;
+        $("material").placeholder = config.placeholder;
+        state.action = config.actions[0][0];
+        const box = $("action-options");
+        box.innerHTML = "";
+        config.actions.forEach(([value, label], index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "option-button" + (index === 0 ? " is-selected" : "");
+          button.dataset.action = value;
+          button.textContent = label;
+          button.addEventListener("click", () => {
+            state.action = value;
+            box.querySelectorAll(".option-button").forEach((item) => {
+              item.classList.toggle("is-selected", item === button);
+            });
+          });
+          box.appendChild(button);
+        });
+        resetOutput();
+      }
+
+      function resetOutput() {
+        state.output = "";
+        $("output-empty").classList.remove("hidden");
+        $("output-ready").classList.remove("is-visible");
+        $("copy-output").classList.remove("is-copied");
+        $("copy-output").textContent = "复制对话开场";
+      }
+
+      function readFiles(fileList) {
+        const files = Array.from(fileList || []);
+        if (!files.length) {
+          state.files = [];
+          $("file-status").textContent = "未选择";
+          return;
+        }
+
+        Promise.all(files.map((file) => new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve({ name: file.name, text: String(reader.result || "") });
+          reader.onerror = () => resolve({ name: file.name, text: "", error: true });
+          reader.readAsText(file);
+        }))).then((items) => {
+          state.files = items;
+          const readable = items.filter((item) => !item.error).length;
+          $("file-status").textContent = readable + " 个文件";
+          resetOutput();
+        });
+      }
+
+      function selectedActionLabel() {
+        const selected = $("action-options").querySelector(".option-button.is-selected");
+        return selected ? selected.textContent : "";
+      }
+
+      function contextText() {
+        const parts = [];
+        if (state.context.topic) parts.push("研究主题：" + state.context.topic);
+        if (state.context.field) parts.push("研究领域：" + state.context.field);
+        if (state.context.notes) parts.push("长期背景：" + state.context.notes);
+        const current = $("task-context").value.trim();
+        if (current) parts.push("本次补充：" + current);
+        return parts.join("\n");
+      }
+
+      function fileText() {
+        if (!state.files.length) return { text: "", clipped: false };
+        let total = "";
+        let clipped = false;
+        state.files.forEach((file) => {
+          const block = "\n\n--- 文件：" + file.name + " ---\n" + (file.error ? "[文件读取失败，请在对话中另行上传]" : file.text);
+          if (total.length + block.length <= maxEmbeddedChars) {
+            total += block;
+          } else {
+            const remaining = Math.max(0, maxEmbeddedChars - total.length);
+            total += block.slice(0, remaining);
+            clipped = true;
+          }
+        });
+        return { text: total, clipped };
+      }
+
+      function commonRules() {
+        return [
+          "请从我已经提供的材料开始，不要先要求我填写完整的研究框架。",
+          "使用清楚、完整的中文概念，不要使用没有解释的字母缩写。",
+          "如果涉及方法，请明确区分研究设计、数据收集和数据分析，不要把它们混成一个概念。",
+          "不要替我编造数据、引文或文献。无法核实的内容请明确说明。",
+          "先指出你依据了材料中的哪些信息，再给判断。"
+        ];
+      }
+
+      function taskInstructions() {
+        const action = selectedActionLabel();
+        if (state.task === "text") {
+          return [
+            "你是一位严谨的质性研究与文本分析合作者。",
+            "本次目标：" + action + "。",
+            "分析时保留原句和语境，区分材料中的直接证据、你的解释和仍待确认的推测。",
+            "主动寻找不符合主要解释的片段、不同受访者之间的差异以及可能被忽略的反例。",
+            "不要因为某个主题听起来合理，就假装它已经被材料充分支持。"
+          ];
+        }
+        if (state.task === "literature") {
+          return [
+            "你是一位重视证据质量的文献研究合作者。",
+            "本次目标：" + action + "。",
+            "请区分：文献实际发现了什么、作者如何解释、我可以合理推出什么。",
+            "如果你不能实时检索或核实某篇文献，请直接说明，不要生成看似真实的引用。",
+            "优先组织观点之间的关系，而不是只给一串文献名称。"
+          ];
+        }
+        return [
+          "请采用“" + action + "”与我讨论。",
+          "你的任务不是替我选题，而是识别我当前想法中的隐含假设、概念混淆、证据缺口和替代解释。",
+          "先准确复述我的核心意思，再提出批评；不要为了显得严格而故意否定。",
+          "给出意见时说明：问题在哪里、为什么重要、我可以如何验证或修改。"
+        ];
+      }
+
+      function buildOutput() {
+        const material = $("material").value.trim();
+        const files = fileText();
+        const background = contextText();
+        const guided = state.mode === "guided";
+        const lines = [
+          taskInstructions().join("\n"),
+          "",
+          "合作方式：",
+          guided
+            ? "先用不超过 4 句话复述你对材料和问题的理解，然后只提出一个最关键的问题，等我回答后再继续。每一轮只问一个问题。"
+            : "先给出结构化分析，再列出最重要的 3 条建议；如果信息不足，把不确定性写清楚。",
+          "",
+          "基本要求：",
+          ...commonRules().map((rule) => "- " + rule)
+        ];
+
+        if (background) lines.push("", "背景：", background);
+        if (material) lines.push("", "我目前的材料或想法：", material);
+        if (files.text) lines.push("", "文件内容：", files.text);
+        if (!material && !files.text) {
+          lines.push(
+            "",
+            "我还没有整理好材料。请先问我一个最容易回答、又最能推进工作的具体问题。"
+          );
+        }
+
+        state.output = lines.join("\n");
+        $("output-preview").textContent = state.output;
+        $("output-summary").textContent = selectedActionLabel() + " · " +
+          (state.mode === "guided" ? "逐步讨论" : "直接建议");
+        $("output-brief").innerHTML = state.mode === "guided"
+          ? "<span>先根据材料复述理解</span><span>每次只推进一个关键问题</span><span>区分证据、解释和不确定性</span>"
+          : "<span>先给出结构化分析</span><span>明确最重要的三条建议</span><span>区分证据、解释和不确定性</span>";
+        $("output-note").textContent = files.clipped
+          ? "部分文件内容较长，已截取前段。原文件可在对话中一并上传。"
+          : "在 Codex 或其他 AI 的新对话中粘贴一次即可。";
+        $("output-empty").classList.add("hidden");
+        $("output-ready").classList.add("is-visible");
+        if (window.innerWidth < 901) {
+          $("output-ready").scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      async function copyOutput() {
+        if (!state.output) buildOutput();
+        try {
+          await navigator.clipboard.writeText(state.output);
+        } catch (_) {
+          const helper = document.createElement("textarea");
+          helper.value = state.output;
+          helper.style.position = "fixed";
+          helper.style.opacity = "0";
+          document.body.appendChild(helper);
+          helper.select();
+          document.execCommand("copy");
+          helper.remove();
+        }
+        const button = $("copy-output");
+        button.classList.add("is-copied");
+        button.textContent = "已复制";
+        showToast("对话开场已复制");
+      }
+
+      function openContext() {
+        $("research-topic").value = state.context.topic;
+        $("research-field").value = state.context.field;
+        $("research-notes").value = state.context.notes;
+        $("context-dialog").classList.remove("hidden");
+        $("research-topic").focus();
+      }
+
+      function closeContext() {
+        $("context-dialog").classList.add("hidden");
+      }
+
+      function saveContextFromDialog() {
+        state.context = {
+          topic: $("research-topic").value.trim(),
+          field: $("research-field").value.trim(),
+          notes: $("research-notes").value.trim()
+        };
+        saveContext();
+        closeContext();
+        resetOutput();
+        showToast("研究背景已保存");
+      }
+
+      function clearContext() {
+        state.context = { topic: "", field: "", notes: "" };
+        $("research-topic").value = "";
+        $("research-field").value = "";
+        $("research-notes").value = "";
+        saveContext();
+        resetOutput();
+        showToast("研究背景已清空");
+      }
+
+      loadState();
+      $("cat-enter").addEventListener("click", enterApp);
+      document.querySelectorAll("[data-view]").forEach((button) => {
+        button.addEventListener("click", () => setView(button.dataset.view));
+      });
+      document.querySelectorAll("[data-go]").forEach((button) => {
+        button.addEventListener("click", () => setView(button.dataset.go));
+      });
+      $("mode-switch").addEventListener("click", (event) => {
+        const button = event.target.closest("[data-mode]");
+        if (!button) return;
+        state.mode = button.dataset.mode;
+        $("mode-switch").querySelectorAll(".mode-button").forEach((item) => {
+          item.classList.toggle("is-selected", item === button);
+        });
+        resetOutput();
+      });
+      $("files").addEventListener("change", (event) => readFiles(event.target.files));
+      $("material").addEventListener("input", resetOutput);
+      $("task-context").addEventListener("input", resetOutput);
+      $("prepare").addEventListener("click", buildOutput);
+      $("copy-output").addEventListener("click", copyOutput);
+      $("edit-output").addEventListener("click", () => {
+        $("material").focus();
+        $("material").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      $("context-open").addEventListener("click", openContext);
+      $("context-close").addEventListener("click", closeContext);
+      $("context-save").addEventListener("click", saveContextFromDialog);
+      $("context-clear").addEventListener("click", clearContext);
+      $("context-dialog").addEventListener("click", (event) => {
+        if (event.target === $("context-dialog")) closeContext();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !$("context-dialog").classList.contains("hidden")) closeContext();
+      });
+    })();
+  </script>
+</body>
+</html>
